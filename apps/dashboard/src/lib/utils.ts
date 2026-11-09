@@ -1,0 +1,65 @@
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+export function formatTimestamp(
+  dateString: string | null | undefined,
+  showSeconds: boolean = false
+): string | null {
+  if (!dateString) return null;
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return null;
+  const dateStr = d.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+  const timeStr = d.toLocaleTimeString(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+    ...(showSeconds && { second: '2-digit' }),
+  });
+  return `${dateStr} at ${timeStr}`;
+}
+
+export function formatCompactTimestamp(
+  dateString: string | null | undefined,
+  showSeconds: boolean = false
+): string | null {
+  if (!dateString) return null;
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return null;
+  const timeStr = d.toLocaleTimeString(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+    ...(showSeconds && { second: '2-digit' }),
+  });
+  const now = new Date();
+  const isToday =
+    d.getDate() === now.getDate() &&
+    d.getMonth() === now.getMonth() &&
+    d.getFullYear() === now.getFullYear();
+  if (isToday) return `Today ${timeStr}`;
+  const dateStr = d.toLocaleDateString(undefined, {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+  return `${dateStr} ${timeStr}`;
+}
+
+export const formatBytes = (bytes: number) => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+// A job's reason is its code, optionally followed by ": detail"; labels names the codes.
+export const describeReason = (reason: string, labels: Record<string, string>) => {
+  const code = reason.split(':')[0].trim();
+  const label = labels[code];
+  return label ? { label, detail: reason === code ? undefined : reason } : { label: reason };
+};
